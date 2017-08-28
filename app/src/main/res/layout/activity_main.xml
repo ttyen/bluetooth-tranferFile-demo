@@ -14,14 +14,15 @@
         android:layout_height="wrap_content"
         android:text="S-FTP"
         android:enabled="false"
+        android:visibility="invisible"
         android:id="@+id/sendFile"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="S-OPP"
+        android:text="Send"
         android:enabled="false"
-        android:id="@+id/sendFile2"
+        android:id="@+id/sendOPP"
         android:layout_toRightOf="@id/sendFile" />
 
     <Button
@@ -30,7 +31,7 @@
         android:text="RcvFile"
         android:enabled="false"
         android:id="@+id/recvFile"
-        android:layout_toRightOf="@id/sendFile2" />
+        android:layout_toRightOf="@id/sendOPP" />
 
     <Button
         android:layout_width="wrap_content"

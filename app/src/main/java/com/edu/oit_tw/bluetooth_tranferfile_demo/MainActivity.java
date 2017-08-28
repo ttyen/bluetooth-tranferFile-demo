@@ -10,7 +10,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -38,8 +37,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -58,14 +55,11 @@ public class MainActivity extends AppCompatActivity {
     private ArrayAdapter<String> mBTArrayAdapter;
     private ListView mDevicesListView;
     private Button mSEND;
-    private Button mSEND2;
+    private Button mSENDOPP;
     private Button mRECV;
     private Button mQUIT;
-    final List<String> fileList = new ArrayList<String>();
-    private static final int REQUEST_BLU = 1;
-    private static final int DISCOVER_DURATION = 300;
-    private List<String> myList;
-    public String filename;
+ //   final List<String> fileList = new ArrayList<String>();
+ //   private List<String> myList;
 
     private Handler mHandler; // Our main handler that will receive callback notifications
     public ConnectedThread mConnectedThread; // bluetooth background worker thread to send and receive data
@@ -77,7 +71,6 @@ public class MainActivity extends AppCompatActivity {
     private final static int REQUEST_ENABLE_BT = 1; // used to identify adding bluetooth names
     private final static int MESSAGE_READ = 2; // used in bluetooth handler to identify message update
     private final static int CONNECTING_STATUS = 3; // used in bluetooth handler to identify message status
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
         mDiscoverBtn = (Button)findViewById(R.id.discover);
         mListPairedDevicesBtn = (Button)findViewById(R.id.PairedBtn);
         mSEND = (Button) findViewById(R.id.sendFile);
-        mSEND2 = (Button) findViewById(R.id.sendFile2);
+        mSENDOPP = (Button) findViewById(R.id.sendOPP);
         mRECV = (Button) findViewById(R.id.recvFile);
         mQUIT = (Button) findViewById(R.id.quit);
 
@@ -103,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                         new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.READ_EXTERNAL_STORAGE},
                         1);
             } else {
-                //do something
+                Toast.makeText(this, "The app was not allowed to write to your storage. Hence, it cannot function properly. Please consider granting it this permission", Toast.LENGTH_LONG).show();
             }
         } else {
             //do something
@@ -148,36 +141,22 @@ public class MainActivity extends AppCompatActivity {
         mSEND.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
-/*                Intent intent = new Intent();
-                intent.setClass(MainActivity.this, SendActivity.class);
-                startActivity(intent);
-                startActivityForResult(intent, REQUEST_SEND_FILE);
-                */
-                //       myList = new ArrayList<String>();
                 try {
                     sendChooseFile("/bluetooth");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
             }
         });
 
-        mSEND2.setOnClickListener(new View.OnClickListener(){
+        mSENDOPP.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
-/*                Intent intent = new Intent();
-                intent.setClass(MainActivity.this, SendActivity.class);
-                startActivity(intent);
-                startActivityForResult(intent, REQUEST_SEND_FILE);
-                */
-                //       myList = new ArrayList<String>();
                 try {
-                    sendChooseFile2("/bluetooth");
+                    pushOverOPP("/bluetooth");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
             }
         });
 
@@ -214,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
                     if(msg.arg1 == 1) {
                         mBluetoothStatus.setText((String) msg.obj);;
                         mSEND.setEnabled(true);
-                        mSEND2.setEnabled(true);
+                        mSENDOPP.setEnabled(true);
                         mRECV.setEnabled(true);
                     } else
                         mBluetoothStatus.setText("Connection Failed");
@@ -229,15 +208,6 @@ public class MainActivity extends AppCompatActivity {
         }
         else {
 
- /*           mSendFile.setOnClickListener(new View.OnClickListener(){
-                @Override
-                public void onClick(View v){
-                    if(mConnectedThread != null) //First check to make sure thread created
-                        mConnectedThread.write("1");
-                }
-            });
-*/
-
             mScanBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -250,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(View v){
                     bluetoothOff(v);
                     mSEND.setEnabled(false);
-                    mSEND2.setEnabled(false);
+                    mSENDOPP.setEnabled(false);
                     mRECV.setEnabled(false);
                 }
             });
@@ -284,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Enter here after user selects "yes" or "no" to enabling radio
-/*    @Override
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent Data){
         // Check which request we're responding to
         if (requestCode == REQUEST_ENABLE_BT) {
@@ -298,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
                 mBluetoothStatus.setText("Disabled");
         }
     }
-*/
+
 
     private void bluetoothOff(View view){
         mBTAdapter.disable(); // turn off
@@ -447,7 +417,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
-
                     break;
                 }
             }
@@ -510,7 +479,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         builderSingle.show();
-
     }
 
     public void sendChooseFile(String bluetoothpath) throws JSONException {
@@ -552,12 +520,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         builderSingle.show();
-
-
     }
 
-
-    public void sendChooseFile2(String bluetoothpath) throws JSONException {
+    public void pushOverOPP(String bluetoothpath) throws JSONException {
         String Path = Environment.getExternalStorageDirectory().getPath() + bluetoothpath;
         File f = new File(Path);
         File file[] = f.listFiles();
@@ -589,11 +554,17 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog,int which) {
                         dialog.dismiss();
-                        filename = strName;
-                        // mConnectedThread.write("GETFILE:"+strName);
-                        Intent discoveryIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-                        discoveryIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, DISCOVER_DURATION);
-                        startActivityForResult(discoveryIntent, REQUEST_BLU);
+
+                        Intent intent = new Intent();
+                        intent.setAction(Intent.ACTION_SEND);
+                        intent.setType("*/*"); // supports all mime types
+                        intent.setPackage("com.android.bluetooth"); //bluetooth package name, default opp
+
+                        File file = new File(Environment.getExternalStorageDirectory().getPath().toString() + "/bluetooth/" + strName);
+
+                        intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
+                        startActivity(intent);
+
                     }
                 });
                 builderInner.show();
@@ -601,46 +572,5 @@ public class MainActivity extends AppCompatActivity {
         });
         builderSingle.show();
     }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == DISCOVER_DURATION && requestCode == REQUEST_BLU) {
-            Intent i = new Intent();
-            i.setAction(Intent.ACTION_SEND);
-            i.setType("*/*");
-            File file = new File(Environment.getExternalStorageDirectory().getPath().toString() + "/bluetooth/" + filename);
-
-            i.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
-
-            PackageManager pm = getPackageManager();
-            List<ResolveInfo> list = pm.queryIntentActivities(i, 0);
-            if (list.size() > 0) {
-                String packageName = null;
-                String className = null;
-                boolean found = false;
-
-                for (ResolveInfo info : list) {
-                    packageName = info.activityInfo.packageName;
-                    if (packageName.equals("com.android.bluetooth")) {
-                        className = info.activityInfo.name;
-                        found = true;
-                        break;
-                    }
-                }
-                //CHECK BLUETOOTH available or not------------------------------------------------
-                if (!found) {
-                    Toast.makeText(this, "Bluetooth han't been found", Toast.LENGTH_LONG).show();
-                } else {
-                    i.setClassName(packageName, className);
-                    startActivity(i);
-                }
-            }
-        } else {
-            Toast.makeText(this, "Bluetooth is cancelled", Toast.LENGTH_LONG).show();
-        }
-    }
-
-
-
 
 }
