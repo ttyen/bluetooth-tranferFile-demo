@@ -36,7 +36,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Q"
+        android:text="QUIT"
         android:enabled="true"
         android:id="@+id/quit"
         android:layout_toRightOf="@id/recvFile" />
